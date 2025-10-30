@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Trabalho de Probabilidade</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+    <div class="container">
+        <img src="logo.png" id="logo" />
+        <h1>Trabalho de Probabilidade</h1>
+        <h2> Milena Carolina Lanznaster Kanigoski</h2>
+        <h3>Atividade A - Distribuição de Poisson</h3>
+        <p> Vamos usar numneros ficticios representando os últimos 8 jogos do Flamengo para calcular a probabilidade do
+            flamengo marcar pelo menos um gol na proxima partida.</p>
+
+        <h3>Ultimos jogos do Flamengo:</h3>
+        <table>
+            <tr>
+                <th>Jogos</th>
+                <th>Gols</th>
+            </tr>
+            <tr>
+                <td>Flamengo x Racing</td>
+                <td>1</td>
+            </tr>
+            <tr>
+                <td>Flamengo x Palmeiras</td>
+                <td>3</td>
+            </tr>
+            <tr>
+                <td>Flamengo x Botafogo</td>
+                <td>3</td>
+            </tr>
+            <tr>
+                <td>Flamengo x Bahia</td>
+                <td>1</td>
+            </tr>
+            <tr>
+                <td>Flamengo x Cruzeiro</td>
+                <td>0</td>
+            </tr>
+            <tr>
+                <td>Flamengo x Corinthians</td>
+                <td>2</td>
+            </tr>
+            <tr>
+                <td>Flamengo x Estudiantes</td>
+                <td>2</td>
+            </tr>
+            <tr>
+                <td>Flamengo x Vasco da Gama</td>
+                <td>1</td>
+            </tr>
+        </table>
+
+        <div id="MediaGols" class="result"></div>
+    </div>
+    <div class="container">
+        <h3>Atividade B - Distribuição Exponencial</h3>
+        <p>Aqui vamos supor que o tempo entre os gols do Flamengo siga uma distribuição exponencial (ou seja,
+            quanto maior o tempo, menor a chance do próximo gol demorar pra sair).</p>
+
+        <label>Tempo (em minutos): <input id="tempo" type="number" value="20" style="width:80px"></label>
+        <button id="btnCalc">Calcular probabilidade</button>
+
+        <div id="resultadoExp" class="result"></div>
+
+
+
+        <script>
+            const gols = [2, 1, 3, 0, 2, 1, 2, 1];
+            const media = gols.reduce((a, b) => a + b, 0) / gols.length;
+
+            function poissonPMF(k, lambda) {
+                let logF = 0; for (let i = 2; i <= k; i++) logF += Math.log(i);
+                return Math.exp(-lambda + k * Math.log(lambda) - logF);
+            }
+
+            const p0 = poissonPMF(0, media);
+            const pPeloMenosUm = 1 - p0;
+
+            let texto = `<p>Média de gols por jogo: <strong>${media.toFixed(2)}</strong></p>`;
+            texto += `<p>Probabilidade do Flamengo marcar pelo menos 1 gol no próximo jogo: <strong>${(pPeloMenosUm * 100).toFixed(2)}%</strong></p>`;
+
+            texto += '<h3>Lista de probabilidades:</h3><table><tr><th>Gols</th><th>Probabilidade</th></tr>';
+            for (let k = 0; k <= 5; k++) {
+                texto += `<tr><td>${k}</td><td>${(poissonPMF(k, media) * 100).toFixed(2)}%</td></tr>`;
+            }
+            texto += '</table>';
+
+            document.getElementById('MediaGols').innerHTML = texto;
+
+            function desenhar(rate) {
+                const c = document.getElementById('grafico');
+                const ctx = c.getContext('2d');
+                const w = c.width, h = c.height;
+                ctx.clearRect(0, 0, w, h);
+                const T = 60, maxY = rate;
+                ctx.beginPath();
+                for (let i = 0; i <= 300; i++) {
+                    const t = (i / 300) * T;
+                    const x = (w - 60) * (t / T) + 40;
+                    const yv = rate * Math.exp(-rate * t);
+                    const y = h - 30 - (yv / maxY) * (h - 60);
+                    if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+                }
+                ctx.strokeStyle = "#d32f2f";
+                ctx.stroke();
+                ctx.fillStyle = "#000";
+                ctx.fillText("Tempo (min)", w / 2 - 30, h - 5);
+            }
+
+            document.getElementById('btnCalc').addEventListener('click', () => {
+                const t = Number(document.getElementById('tempo').value);
+                const taxa = media / 90; // gols por minuto
+                const p = 1 - Math.exp(-taxa * t);
+                document.getElementById('resultadoExp').innerHTML = `<p>Taxa de gols: ${(taxa).toExponential(3)} por minuto</p><p>Probabilidade de sair um gol em até ${t} minutos: <strong>${(p * 100).toFixed(2)}%</strong></p>`;
+                desenhar(taxa);
+            });
+
+            desenhar(media / 90);
+        </script>
+</body>
+
+</html>
